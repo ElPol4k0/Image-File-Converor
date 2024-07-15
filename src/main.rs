@@ -30,7 +30,10 @@ impl epi::App for MyApp {
 
     fn update(&mut self, ctx: &egui::CtxRef, _frame: &mut eframe::epi::Frame<'_>) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Image Processor");
+            ui.with_layout(egui::Layout::top_down_justified(egui::Align::Center), |ui| {
+                ui.heading("Image Processor");
+                ui.add_space(20.0)
+            });
 
             ui.horizontal(|ui| {
                 ui.label("Input Path:");
@@ -75,7 +78,19 @@ impl epi::App for MyApp {
                     });
             });
 
-            if ui.button("Process Image").clicked() {
+            if ui
+                .add(
+                    egui::Button::new("Process Image")
+                        .fill(egui::Color32::from_rgb(30, 144, 255)) // Hintergrundfarbe des Buttons
+                        .text_color(egui::Color32::BLACK) // Textfarbe
+                        .stroke(egui::Stroke::new(
+                            1.0,
+                            egui::Color32::from_rgb(200, 200, 200),
+                        )),
+                ) // Rand des Buttons
+                .on_hover_text("Click to process the image")
+                .clicked()
+            {
                 process_image(
                     &self.input_path,
                     &self.output_path,
@@ -102,7 +117,8 @@ fn process_image(
     format: &str,
 ) {
     if let Ok(image) = image::open(input_path) {
-        let resized_image = image.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3);
+        let resized_image =
+            image.resize_exact(new_width, new_height, image::imageops::FilterType::Lanczos3);
         save_image(&resized_image, output_path, format);
     } else {
         eprintln!("Failed to open image at path: {}", input_path);
@@ -115,7 +131,7 @@ fn save_image(image: &DynamicImage, output_path: &str, format: &str) {
         "jpeg" => ImageOutputFormat::Jpeg(80),
         "bmp" => ImageOutputFormat::Bmp,
         "ico" => ImageOutputFormat::Ico,
-        
+
         _ => ImageOutputFormat::Jpeg(80), // Default to JPEG if format is unknown
     };
 
@@ -144,4 +160,3 @@ fn save_image(image: &DynamicImage, output_path: &str, format: &str) {
         eprintln!("Failed to save image: {}", e);
     }
 }
-
